@@ -13,7 +13,10 @@ def hash_password(password: str):
 def verify_password(plain_password: str, hash_password: str):
     return password_hash.verify(plain_password, hash_password)
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret")
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is not set")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 def create_access_token(data: dict):
