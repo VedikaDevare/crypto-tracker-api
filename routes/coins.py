@@ -43,10 +43,12 @@ def coin_data(coin_id: str, db: Session = Depends(get_db)):
             "currency": "USD",
             "timestamp": snapshot.timestamp
         }
-    except httpx.HTTPStatusError:
+    except httpx.HTTPStatusError as exc:
+        print("CoinGecko Status:", exc.response.status_code)
+        print("CoinGecko Error:", exc.response.text[:500])
         raise HTTPException(
             status_code=502,
-            detail = "Cryptocurrency provider returned an error"
+            detail="Cryptocurrency provider returned an error"
         )
     except httpx.RequestError:
         raise HTTPException(
