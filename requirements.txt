@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+httpx
+pwdlib[argon2]
+python-jose[cryptography]
+email-validator
