@@ -1,4 +1,5 @@
 import httpx
+import os
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -7,6 +8,7 @@ from models import Price_history
 from schemas import CoinResponse, HistoryResponse, ChangeResponse
 
 router = APIRouter()
+api_key = os.getenv("COINGECKO_API_KEY")
 
 coin_names = {
     "bitcoin": "Bitcoin",
@@ -24,8 +26,11 @@ def coin_data(coin_id: str, db: Session = Depends(get_db)):
            detail="Coin_id not found"
         )
     try:
-        response = httpx.get(url=f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd",
-                timeout=10)
+        response = httpx.get(
+            url=f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd",
+            headers={"x-cg-demo-api-key": api_key},
+            timeout=10
+        )
         response.raise_for_status()
         data = response.json()
         price = data[coin_id]["usd"]
