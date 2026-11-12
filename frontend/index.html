@@ -12,12 +12,266 @@
 
     <h3>Bitcoin</h3>
     <p>Price: <span id="bitcoin">Loading...</span></p>
+    <a href="https://crypto-tracker-api-x48k.onrender.com/coins/bitcoin">
+        View Bitcoin Price
+    </a>
 
     <h3>Ethereum</h3>
     <p>Price: <span id="ethereum">Loading...</span></p>
+    <a href="https://crypto-tracker-api-x48k.onrender.com/coins/ethereum">
+        View Ethereum Price
+    </a>
 
     <h3>Solana</h3>
     <p>Price: <span id="solana">Loading...</span></p>
+    <a href="https://crypto-tracker-api-x48k.onrender.com/coins/solana">
+        View Solana Price
+    </a>
+
+<hr>
+
+<h2>My Crypto Watchlist</h2>
+
+<h3>Login</h3>
+
+<label>Username:</label>
+<input type="text" id="username" placeholder="Enter your username">
+<br><br>
+
+<label>Password:</label>
+<input type="password" id="password" placeholder="Enter your password">
+
+<br><br>
+
+<button onclick="login()">Login</button>
+
+<p id="login-message"></p>
+
+<h3>Add a Coin</h3>
+
+<input type="text" id="coin-id" placeholder="Example: bitcoin">
+
+<button onclick="addToWatchlist()">Add Coin</button>
+
+<p id="watchlist-message"></p>
+
+<h3>My Coins</h3>
+
+<button onclick="getWatchlist()">View Watchlist</button>
+
+<ul id="watchlist"></ul>
 
 </body>
 </html>
+<script>
+async function getPrice(coin) {
+    const priceElement = document.getElementById(coin);
+
+    try {
+        const response = await fetch(
+            `https://crypto-tracker-api-x48k.onrender.com/coins/${coin}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch price");
+        }
+
+        const data = await response.json();
+
+        priceElement.innerText = data.price_usd + " USD";
+
+    } catch (error) {
+        priceElement.innerText = "Price unavailable";
+        console.log(error);
+    }
+}
+
+getPrice("bitcoin");
+getPrice("ethereum");
+getPrice("solana");
+
+let authToken = "";
+
+async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const response = await fetch(
+            "https://crypto-tracker-api-x48k.onrender.com/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Login failed");
+        }
+
+        authToken = data.access_token;
+
+        document.getElementById("login-message").innerText =
+            "Login successful!";
+
+    } catch (error) {
+        document.getElementById("login-message").innerText =
+            error.message;
+    }
+}
+
+async function addToWatchlist() {
+    const coinId = document.getElementById("coin-id").value
+        .trim().toLowerCase();
+
+    try {
+        const response = await fetch(
+            "https://crypto-tracker-api-x48k.onrender.com/watchlist",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + authToken
+                },
+                body: JSON.stringify({
+                    coin_id: coinId
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Unable to add coin");
+        }
+
+        document.getElementById("watchlist-message").innerText =
+            coinId + " added successfully!";
+
+        document.getElementById("coin-id").value = "";
+
+    } catch (error) {
+        document.getElementById("watchlist-message").innerText =
+            error.message;
+    }
+}
+
+
+async function getWatchlist() {
+    try {
+        const response = await fetch(
+            "https://crypto-tracker-api-x48k.onrender.com/watchlist",
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + authToken
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Unable to fetch watchlist");
+        }
+
+        const list = document.getElementById("watchlist");
+        list.innerHTML = "";
+
+        data.forEach(function(coin) {
+            const item = document.createElement("li");
+            item.innerText = coin.coin_id;
+            list.appendChild(item);
+        });
+
+    } catch (error) {
+        document.getElementById("watchlist-message").innerText =
+            error.message;
+    }
+}
+
+
+async function removeFromWatchlist(coinId) {
+    try {
+        const response = await fetch(
+            `https://crypto-tracker-api-x48k.onrender.com/watchlist/${coinId}`,
+            {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + authToken
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Unable to remove coin");
+        }
+
+        document.getElementById("watchlist-message").innerText =
+            data.message;
+
+        getWatchlist();
+
+    } catch (error) {
+        document.getElementById("watchlist-message").innerText =
+            error.message;
+    }
+}
+
+async function getWatchlist() {
+    try {
+        const response = await fetch(
+            "https://crypto-tracker-api-x48k.onrender.com/watchlist",
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + authToken
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Unable to fetch watchlist");
+        }
+
+        const list = document.getElementById("watchlist");
+        list.innerHTML = "";
+
+        data.forEach(function(coin) {
+            const item = document.createElement("li");
+
+            const coinName = document.createElement("span");
+            coinName.innerText = coin.coin_id + " ";
+
+            const removeButton = document.createElement("button");
+            removeButton.innerText = "Remove";
+
+            removeButton.addEventListener("click", function() {
+                removeFromWatchlist(coin.coin_id);
+            });
+
+            item.appendChild(coinName);
+            item.appendChild(removeButton);
+            list.appendChild(item);
+        });
+
+    } catch (error) {
+        document.getElementById("watchlist-message").innerText =
+            error.message;
+    }
+}
+
+
+</script>
