@@ -195,3 +195,24 @@ GitHub: [VedikaDevare](https://github.com/VedikaDevare)
 ---
 
 *Developed as a learning and portfolio project to practice Python backend development, REST APIs, databases, authentication, testing, and deployment.*
+
+
+## Frontend
+
+A simple HTML and JavaScript frontend connected to the FastAPI backend.
+
+### Features
+- Displays live Bitcoin, Ethereum, and Solana prices.
+- User login using JWT authentication.
+- Add coins to a personal watchlist.
+- View saved watchlist coins.
+- Remove coins from the watchlist.
+- Displays API error messages.
+
+### How to use
+1. Open `frontend/index.html` in a browser.
+2. Log in using a registered username and password.
+3. View live cryptocurrency prices.
+4. Add, view, and remove coins from your watchlist.
+
+The frontend communicates with the deployed FastAPI backend hosted on Render.
